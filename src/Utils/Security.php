@@ -17,7 +17,7 @@ class Security
      */
     public static function hashPassword($password)
     {
-        return password_hash($password, PASSWORD_ARGON2ID);
+        return password_hash($password, \PASSWORD_ARGON2ID);
     }
 
     /**
@@ -127,3 +127,20 @@ class Security
     }
 }
 
+$key, OPENSSL_RAW_DATA, $iv, $tag);
+    }
+
+    /**
+     * Rate limiting check
+     */
+    public static function checkRateLimit($identifier, $limit = null, $window = null)
+    {
+        $limit = $limit ?: (int)Config::get('RATE_LIMIT_MESSAGES', 60);
+        $window = $window ?: (int)Config::get('RATE_LIMIT_WINDOW', 60);
+        
+        $file = __DIR__ . '/../../storage/rate_limit_' . md5($identifier) . '.json';
+        $now = time();
+        
+        if (file_exists($file)) {
+            $data = json_decode(file_get_contents($file), true);
+            $data['requests'] = array_filter($data['requests'], function
