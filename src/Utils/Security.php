@@ -36,9 +36,9 @@ class Security
     public static function sanitizeInput($input)
     {
         if (is_array($input)) {
-            return array_map([self::class, \'sanitizeInput\'], $input);
+            return array_map([self::class, 'sanitizeInput'], $input); // Corrected line
         }
-        return htmlspecialchars(trim($input), ENT_QUOTES, \'UTF-8\');
+        return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
     }
 
     /**
@@ -46,10 +46,10 @@ class Security
      */
     public static function validateCSRF($token)
     {
-        if (!isset($_SESSION[\'csrf_token\'])) {
+        if (!isset($_SESSION['csrf_token'])) {
             return false;
         }
-        return hash_equals($_SESSION[\'csrf_token\'], $token);
+        return hash_equals($_SESSION['csrf_token'], $token);
     }
 
     /**
@@ -57,10 +57,10 @@ class Security
      */
     public static function generateCSRF()
     {
-        if (!isset($_SESSION[\'csrf_token\'])) {
-            $_SESSION[\'csrf_token\'] = self::generateToken();
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = self::generateToken();
         }
-        return $_SESSION[\'csrf_token\'];
+        return $_SESSION['csrf_token'];
     }
 
     /**
@@ -68,14 +68,14 @@ class Security
      */
     public static function encrypt($data, $key = null)
     {
-        $key = $key ?: Config::get(\'ENCRYPTION_KEY\');
+        $key = $key ?: Config::get('ENCRYPTION_KEY');
         if (strlen($key) !== 32) {
-            throw new \InvalidArgumentException(\'Encryption key must be 32 characters long\');
+            throw new \InvalidArgumentException('Encryption key must be 32 characters long');
         }
 
         $iv = random_bytes(12); // 96-bit IV for GCM
-        $tag = \'\';
-        $encrypted = openssl_encrypt($data, \'aes-256-gcm\', $key, OPENSSL_RAW_DATA, $iv, $tag);
+        $tag = '';
+        $encrypted = openssl_encrypt($data, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
         
         return base64_encode($iv . $tag . $encrypted);
     }
@@ -85,9 +85,9 @@ class Security
      */
     public static function decrypt($encryptedData, $key = null)
     {
-        $key = $key ?: Config::get(\'ENCRYPTION_KEY\');
+        $key = $key ?: Config::get('ENCRYPTION_KEY');
         if (strlen($key) !== 32) {
-            throw new \InvalidArgumentException(\'Encryption key must be 32 characters long\');
+            throw new \InvalidArgumentException('Encryption key must be 32 characters long');
         }
 
         $data = base64_decode($encryptedData);
@@ -95,7 +95,7 @@ class Security
         $tag = substr($data, 12, 16);
         $encrypted = substr($data, 28);
 
-        return openssl_decrypt($encrypted, \'aes-256-gcm\', $key, OPENSSL_RAW_DATA, $iv, $tag);
+        return openssl_decrypt($encrypted, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
     }
 
     /**
@@ -103,28 +103,28 @@ class Security
      */
     public static function checkRateLimit($identifier, $limit = null, $window = null)
     {
-        $limit = $limit ?: (int)Config::get(\'RATE_LIMIT_MESSAGES\', 60);
-        $window = $window ?: (int)Config::get(\'RATE_LIMIT_WINDOW\', 60);
+        $limit = $limit ?: (int)Config::get('RATE_LIMIT_MESSAGES', 60);
+        $window = $window ?: (int)Config::get('RATE_LIMIT_WINDOW', 60);
         
-        $file = __DIR__ . \'/../../storage/rate_limit_\' . md5($identifier) . \'.json\';
+        $file = __DIR__ . '/../../storage/rate_limit_' . md5($identifier) . '.json';
         $now = time();
         
         if (file_exists($file)) {
             $data = json_decode(file_get_contents($file), true);
-            $data[\'requests\'] = array_filter($data[\'requests\'], function($timestamp) use ($now, $window) {
+            $data['requests'] = array_filter($data['requests'], function($timestamp) use ($now, $window) {
                 return ($now - $timestamp) < $window;
             });
         } else {
-            $data = [\'requests\' => []];
+            $data = ['requests' => []];
         }
         
-        if (count($data[\'requests\']) >= $limit) {
+        if (count($data['requests']) >= $limit) {
             return false;
         }
         
-        $data[\'requests\'][] = $now;
+        $data['requests'][] = $now;
         file_put_contents($file, json_encode($data));
-        
+
         return true;
     }
 }
