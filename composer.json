@@ -1,0 +1,16 @@
+{
+    "name": "manus/chat-platform",
+    "description": "A lightweight and secure real-time chat platform.",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.4",
+        "cboden/ratchet": "^0.4"
+    }
+}
+
