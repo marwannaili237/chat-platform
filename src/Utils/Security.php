@@ -17,10 +17,10 @@ class Security
     /**
      * Hash a password securely
      */
-    public static function hashPassword($password)
-    {
-        return password_hash($password, \PASSWORD_ARGON2ID);
-    }
+    
+public static function hashPassword($password) {
+    return password_hash($password, PASSWORD_DEFAULT);
+  }
 
     /**
      * Verify a password against its hash
